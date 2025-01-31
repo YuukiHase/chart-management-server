@@ -1,4 +1,14 @@
-import { Body, Controller, Delete, Get, NotFoundException, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  NotFoundException,
+  Param,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
+import { AuthGuard } from 'src/auth/auth.guard';
 import { User } from './user.entity';
 import { UsersService } from './users.service';
 
@@ -6,18 +16,20 @@ import { UsersService } from './users.service';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @UseGuards(AuthGuard)
   @Get()
   findAll(): Promise<User[]> {
     return this.usersService.findAll();
   }
 
+  @UseGuards(AuthGuard)
   @Get(':id')
   async findOne(@Param('id') id: number): Promise<User> {
     const user = await this.usersService.findOne(id);
     if (user) {
-        return user;
+      return user;
     } else {
-        throw new NotFoundException('User not found!')
+      throw new NotFoundException('User not found!');
     }
   }
 
@@ -26,15 +38,9 @@ export class UsersController {
     return this.usersService.create(user);
   }
 
+  @UseGuards(AuthGuard)
   @Delete(':id')
   remove(@Param('id') id: number): Promise<void> {
     return this.usersService.remove(id);
-  }
-
-  @Post('signIn')
-  signIn(
-    @Body() { email, password }: { email: string; password: string },
-  ): Promise<User | null> {
-    return this.usersService.validateUser(email, password);
   }
 }
